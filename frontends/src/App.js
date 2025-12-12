@@ -10,9 +10,12 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useContext } from 'react';
 
+
 const ProtectedRoute = ({ children }) => {
   const { token } = useContext(AuthContext);
-  return token ? children : <Navigate to="/login" />;
+  // Check both context token and localStorage as fallback
+  const isAuthenticated = token || localStorage.getItem('token');
+  return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
 const App = () => {

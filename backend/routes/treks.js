@@ -5,11 +5,18 @@ const Trek = require('../models/Trek');
 
 router.get('/', auth, async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = 10;
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.max(parseInt(req.query.limit, 10) || 10, 1);
     const skip = (page - 1) * limit;
-    const treks = await Trek.find({}).skip(skip).limit(limit);
-    const total = await Trek.countDocuments();
+
+    // Scope treks to the authenticated user
+    const query = { user: req.user.id };
+
+    const [treks, total] = await Promise.all([
+      Trek.find(query).skip(skip).limit(limit),
+      Trek.countDocuments(query),
+    ]);
+
     res.json({ treks, total, page, limit });
   } catch (err) {
     res.status(500).json({ msg: 'Server error' });
